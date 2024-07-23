@@ -1,0 +1,36 @@
+services:
+  typo3-web:
+    depends_on:
+      - typo3-db
+    ports:
+      - 1080:80
+    build: .
+    volumes:
+      - ${DATA_DIR:-/var/lib}/typo3/fileadmin:/var/www/html/public/fileadmin
+      - ${DATA_DIR:-/var/lib}/typo3/config:/var/www/html/config
+      - ${DATA_DIR:-/var/lib}/typo3/packages:/var/www/html/packages
+      #- ${DATA_DIR:-/var/lib}/typo3/uploads:/var/www/html/uploads
+
+  typo3-db:
+    image: mysql:latest
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD:-yoursupersecretrootpassword}
+      - MYSQL_USER=${DB_USER:-typo3}
+      - MYSQL_PASSWORD=${DB_PASSWORD:-yoursupersecretpassword}
+      - MYSQL_DATABASE=${DB_NAME:-typo3}
+    #volumes:
+    #- ${DATA_DIR:-/var/lib}/typo3/db:/var/lib/mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+  # optional
+  phpmyadmin:
+    image: phpmyadmin
+    restart: always
+    ports:
+      - 1081:80
+    environment:
+      - PMA_HOST=typo3-db
+      - PMA_USER=root
+      - PMA_PASSWORD=${DB_ROOT_PASSWORD:-yoursupersecretrootpassword}
+    depends_on:
+      - typo3-db
